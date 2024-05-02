@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+<suite name="Price Execution Automation Suite">
+    <test name="Athena DnD Price Execution API Regression Test" preserve-order="true" thread-count="1" >
+
+        <classes>
+            <class name="kronos.price.exe.regression.suite.testSuite.BootstrapWork"/>
+
+            <class name="kronos.price.exe.regression.suite.testSuite.TestExecution"/>
+        </classes>
+    </test>
+</suite>
+
+<!--        x[0].demurrageAndDetentionAgreementLines[0].calculationEventTriggers[0]-->
