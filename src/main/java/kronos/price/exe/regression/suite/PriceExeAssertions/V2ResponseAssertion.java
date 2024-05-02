@@ -1,5 +1,6 @@
 package kronos.price.exe.regression.suite.PriceExeAssertions;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import io.restassured.path.json.JsonPath;
@@ -69,7 +70,7 @@ public class V2ResponseAssertion {
             Currency.currencyAssertion(currencyExpected, currencyActual);
             AgreementEffectiveDate.agreementEffectiveDateAssertion(agreementEffectiveDateTimeExpected, agreementEffectiveDateTimeActual);
             AgreementExpirationDate.agreementExpirationDateAssertion(agreementExpirationDateTimeExpected, agreementExpirationDateTimeActual);
-
+            RtAndFtDealMatching.rtAndFtDealMatchingAssertion(responseJsonPath);
             System.out.println("Total number of calls to responseValidator is " + rowCount);
         } catch (Exception e) {
             e.printStackTrace();
@@ -238,5 +239,18 @@ public class V2ResponseAssertion {
 
 
 
+
+    private static class RtAndFtDealMatching {
+        public static void rtAndFtDealMatchingAssertion(JsonPath responseJsonPath) throws Exception {
+            Object ftDealObj = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.demurrageAndDetentionAgreementNumber");
+            String ftDeal = ftDealObj != null ? ftDealObj.toString() : null;
+           Object rtDealObj=responseJsonPath.get("demurrageAndDetentionAgreementLines[1].demurrageAndDetentionAgreement.demurrageAndDetentionAgreementNumber");
+            String rtDeal = rtDealObj != null ? rtDealObj.toString() : null;
+
+            if (!ftDeal.equals(rtDeal)) {
+                AssertionHelper.assertEqual(ftDeal, rtDeal, "RT and FT deal are not matching");
+            }
+        }
+    }
 }
 
