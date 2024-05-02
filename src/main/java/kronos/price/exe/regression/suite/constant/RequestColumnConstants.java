@@ -1,6 +1,6 @@
 package kronos.price.exe.regression.suite.constant;
 
-public interface ColumnConstants {
+public interface RequestColumnConstants {
 
      int  TESTCASE = 1;
      int  PCD = 3;

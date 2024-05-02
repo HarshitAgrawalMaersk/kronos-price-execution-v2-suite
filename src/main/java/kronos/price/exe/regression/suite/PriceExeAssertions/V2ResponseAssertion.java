@@ -3,94 +3,97 @@ package kronos.price.exe.regression.suite.PriceExeAssertions;
 import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import io.restassured.path.json.JsonPath;
-import kronos.price.exe.regression.suite.constant.ColumnConstants;
+import kronos.price.exe.regression.suite.constant.RequestColumnConstants;
+import kronos.price.exe.regression.suite.constant.Constants;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.testng.Assert;
 import java.io.FileInputStream;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static kronos.price.exe.regression.suite.constant.ResponseColumnConstants.*;
 
 
 public class V2ResponseAssertion {
     public static void responseValidator(String testCase, String description, String response) throws IOException {
 
-        String excelFilePath = System.getProperty("PRICE.EXECUTION.V2.FOLDER.EXCEL.PATH");
-        FileInputStream file = new FileInputStream(excelFilePath);
-        XSSFWorkbook wb = new XSSFWorkbook(file);
-        XSSFSheet sh = wb.getSheet("sheet1");
-        int rowCount=0;
-        for (int i = 2; i <= sh.getLastRowNum(); i++) {
-            String cellValue = sh.getRow(i).getCell(ColumnConstants.TESTCASE).getStringCellValue();
+        excelReponseReader(testCase,response);
+
+    }
+
+    private static int getRowIndexByTestCase(XSSFSheet sheet, String testCase) {
+        for (int i = Constants.START_ROW; i <= sheet.getLastRowNum(); i++) {
+            String cellValue = sheet.getRow(i).getCell(RequestColumnConstants.TESTCASE).getStringCellValue();
             if (cellValue.equals(testCase)) {
-                rowCount=i;
-                break;
+                return i;
             }
         }
+        return -1;
+    }
 
-
-         Allure.addAttachment("TESTCOUNT is :" , String.valueOf(rowCount));
-
-
-
+    private static void processResponse(JsonPath responseJsonPath, XSSFSheet sheet, int rowCount) {
         try {
-            JsonPath responseJsonPath = new JsonPath(response);
             System.out.println(responseJsonPath);
+
             String sourceSystemIdentifierActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.references[1].referenceTypeEnum");
             String calculationEventTriggerActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].calculationEventTriggers[0]");
             String chargeTypeActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.pricingParameters[1].pricingParameterValue");
             String agreementTypeActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.agreementType.agreementTypeCode");
             String freeTimeActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].freeTime");
             List<Object> charges = responseJsonPath.getList("demurrageAndDetentionAgreementLines[1].charges");
-
-
             String currencyActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[1].charges[0].unitPrice.unit");
             String agreementEffectiveDateTimeActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.agreementEffectiveDatetime");
             String agreementExpirationDateTimeActual = responseJsonPath.get("demurrageAndDetentionAgreementLines[0].demurrageAndDetentionAgreement.agreementExpirationDatetime");
 
+            System.out.println("ROW COUNT is ***********" + rowCount);
 
-
-            System.out.println("sourceSystemIdentifier   :" + sourceSystemIdentifierActual);
-            System.out.println("calculationEventTriggerResponse   :" + calculationEventTriggerActual);
-            System.out.println("chargeTypeResponse   :" + chargeTypeActual);
-            System.out.println("agreementTypeResponse   :" + agreementTypeActual);
-
-            System.out.println("freeTimeResponse  :" + freeTimeActual);
-            //System.out.println("rateTimeResponse  :" + rateTimeResponse);
-            System.out.println("currencyResponse  :" + currencyActual);
-            System.out.println("agreementEffectiveDateTime  :" + agreementEffectiveDateTimeActual);
-            System.out.println("agreementExpirationDateTime  :" + agreementExpirationDateTimeActual);
-
-            System.out.println("ROW COUNT is ***********" +rowCount);
-            String sourceSystemIdentifierExpected = sh.getRow(rowCount).getCell(37).getStringCellValue().trim();
-            String calculationEventTriggerExpected = sh.getRow(rowCount).getCell(38).getStringCellValue().trim();
-            String chargeTypeExpected = sh.getRow(rowCount).getCell(39).getStringCellValue().trim();
-            String agreementTypeExpected = sh.getRow(rowCount).getCell(40).getStringCellValue().trim();
-            String freeTimeExpected = sh.getRow(rowCount).getCell(41).getStringCellValue().trim();
-            String rateTimeExpected = sh.getRow(rowCount).getCell(42).getStringCellValue().trim();
-            String currencyExpected = sh.getRow(rowCount).getCell(43).getStringCellValue().trim();
-            String agreementEffectiveDateTimeExpected = sh.getRow(rowCount).getCell(44).getStringCellValue().trim();
-            String agreementExpirationDateTimeExpected = sh.getRow(rowCount).getCell(45).getStringCellValue().trim();
+            String sourceSystemIdentifierExpected = sheet.getRow(rowCount).getCell(SOURCE_SYSTEM_IDENTIFIER_EXPECTED).getStringCellValue().trim();
+            String calculationEventTriggerExpected = sheet.getRow(rowCount).getCell(CALCULATION_EVENT_TRIGGER_EXPECTED).getStringCellValue().trim();
+            String chargeTypeExpected = sheet.getRow(rowCount).getCell(CHARGE_TYPE_EXPECTED).getStringCellValue().trim();
+            String agreementTypeExpected = sheet.getRow(rowCount).getCell(AGREEMENT_TYPE_EXPECTED).getStringCellValue().trim();
+            String freeTimeExpected = sheet.getRow(rowCount).getCell(FREE_TIME_EXPECTED).getStringCellValue().trim();
+            String rateTimeExpected = sheet.getRow(rowCount).getCell(RATE_TIME_EXPECTED).getStringCellValue().trim();
+            String currencyExpected = sheet.getRow(rowCount).getCell(CURRENCY_EXPECTED).getStringCellValue().trim();
+            String agreementEffectiveDateTimeExpected = sheet.getRow(rowCount).getCell(AGREEMENT_EFFECTIVE_DATE_TIME_EXPECTED).getStringCellValue().trim();
+            String agreementExpirationDateTimeExpected = sheet.getRow(rowCount).getCell(AGREEMENT_EXPIRATION_DATE_TIME_EXPECTED).getStringCellValue().trim();
 
             SourceSystemIdentifier.sourceSystemIdentifierAssertion(sourceSystemIdentifierExpected, sourceSystemIdentifierActual);
             CalculationEventTrigger.calculationEventTriggerAssertion(calculationEventTriggerExpected, calculationEventTriggerActual);
             ChargeType.chargeTypeAssertion(chargeTypeExpected, chargeTypeActual);
             AgreementType.agreementTypeAssertion(agreementTypeExpected, agreementTypeActual);
             FreeTime.freeTimeAssertion(freeTimeExpected, freeTimeActual);
-            RateTime.rateTimeAssertion(rateTimeExpected,charges,responseJsonPath);
+            RateTime.rateTimeAssertion(rateTimeExpected, charges, responseJsonPath);
             Currency.currencyAssertion(currencyExpected, currencyActual);
             AgreementEffectiveDate.agreementEffectiveDateAssertion(agreementEffectiveDateTimeExpected, agreementEffectiveDateTimeActual);
             AgreementExpirationDate.agreementExpirationDateAssertion(agreementExpirationDateTimeExpected, agreementExpirationDateTimeActual);
 
-             rowCount=rowCount+1;
             System.out.println("Total number of calls to responseValidator is " + rowCount);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
+    private static void excelReponseReader(String testCase, String response) throws IOException {
+        String excelFilePath = System.getProperty("PRICE.EXECUTION.V2.FOLDER.EXCEL.PATH");
+        FileInputStream file = new FileInputStream(excelFilePath);
+        XSSFWorkbook wb = new XSSFWorkbook(file);
+        XSSFSheet sh = wb.getSheet("sheet1");
+        int rowCount = getRowIndexByTestCase(sh, testCase);
+        if (rowCount != -1) {
+            try {
+                JsonPath responseJsonPath = new JsonPath(response);
+                processResponse(responseJsonPath, sh, rowCount);
+            } finally {
+                wb.close(); // close workbook to release resources
+            }
+        } else {
+            System.out.println("Test case not found in Excel sheet.");
+        }
+    }
+
 
 
     private static class AgreementType {
