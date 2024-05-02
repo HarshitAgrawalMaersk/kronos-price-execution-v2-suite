@@ -14,13 +14,12 @@ import io.restassured.RestAssured;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.response.Response;
-import io.restassured.response.ResponseBody;
 import kronos.price.exe.regression.suite.PriceExeAssertions.V2ResponseAssertion;
 import kronos.price.exe.regression.suite.constant.Constants;
 import kronos.price.exe.regression.suite.dataProvider.ExcelDataReader;
-import kronos.price.exe.regression.suite.helper.JsonTransformation;
+import kronos.price.exe.regression.suite.helper.ConfigProfileJsonTransformation;
 import kronos.price.exe.regression.suite.requestMapper.ConfigProfileRequestMapperToJSON;
-import kronos.price.exe.regression.suite.requestMapper.PriceSearchExecutionMapper;
+import kronos.price.exe.regression.suite.requestMapper.PriceSearchRequestExecutionMapper;
 import kronos.price.exe.regression.suite.utilities.WriteToJsonFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -41,8 +40,8 @@ import static io.restassured.http.ContentType.JSON;
 
 public class TestExecution {
     static TreeMap map = new TreeMap<>();
-    public static int rowCount=2;
-    static int testCaseCount=2;
+
+    static int testCaseCount=1;
 
     public static String configProfileSetup(String facilityCode,String chargeTypes)
     {
@@ -56,7 +55,7 @@ public class TestExecution {
 
     public static TreeMap getMapDataForAssertion(String transformedResponse) throws IOException {
 
-       map= PriceSearchExecutionMapper.priceSearchRequestToJSON(testCaseCount);
+       map= PriceSearchRequestExecutionMapper.priceSearchRequestToJSON(testCaseCount);
 
         return map;
     }
@@ -123,12 +122,6 @@ public class TestExecution {
             context.setAttribute("C13_PRICE_SEARCH_ACCESS_TOKEN", accessToken);
 
              String configProfileUrl = System.getProperty("CONFIG.PROFILE.REQUEST.ENDPOINT");
-
-
-
-
-
-
             System.out.println("for testCAse count" + testCaseCount + "Facility location is" + facilityCode);
             String request = configProfileSetup(facilityCode,chargeTypes);
 
@@ -151,7 +144,7 @@ public class TestExecution {
             String resourcesFolder =System.getProperty("PRICE.EXECUTION.V2.RESOURCES.FOLDER.PATH");
 
             WriteToJsonFile.writeJsonToFile(response,resourcesFolder+"configProfileResponses\\",fileName);
-            String transformedResponse = JsonTransformation.jsonTransformation(response, r,facilityCode);
+            String transformedResponse = ConfigProfileJsonTransformation.jsonTransformation(response, r,facilityCode);
 
 
             getMapDataForAssertion(transformedResponse);
@@ -174,13 +167,12 @@ public class TestExecution {
 
         System.out.println("this is setup class " + testcase);
 
-           String  accessToken = generateAccessToken();
+        String  accessToken = generateAccessToken();
 
         context.setAttribute("C13_PRICE_SEARCH_ACCESS_TOKEN", accessToken);
         String priceExecutionV2Request = getPriceExeRequestData(testcase);
         String priceExeRequestV2Url = System.getProperty("PRICE.EXECUTION.V2.REQUEST.ENDPOINT");
 
-        long startTime = System.currentTimeMillis();
          Response responseTime = given()
                 .auth().oauth2(accessToken)
                 .contentType(JSON)
@@ -200,14 +192,17 @@ public class TestExecution {
                 .when().post(priceExeRequestV2Url).then()
                 .extract().response().body().asString();
 
-        Allure.addAttachment("Response time is " , String.valueOf(responseTime.time()));
+        Allure.addAttachment("Response time of price Execution v2 : " , String.valueOf(responseTime.time()));
         String jsonString=JsonToStringConvertor(response);
 
         String filename =fileNameCreator(testcase);
         String resourcesFolder = System.getProperty("PRICE.EXECUTION.V2.RESOURCES.FOLDER.PATH");
         String filePath = resourcesFolder + "priceExecutionResponse\\";
         WriteToJsonFile.writeJsonToFile(jsonString, filePath, filename);
+        testCaseCount++;
+
         V2ResponseAssertion.responseValidator(testcase,description,response);
+
     }
 
 
@@ -227,7 +222,7 @@ public class TestExecution {
     }
 
     public static String getPriceExeRequestData(String key) {
-        return PriceSearchExecutionMapper.map.get(key);
+        return PriceSearchRequestExecutionMapper.map.get(key);
     }
     private String generateAccessToken() {
         String tokenPath = System.getProperty("PRICE.EXECUTION.V2.TOKEN.ENDPOINT");

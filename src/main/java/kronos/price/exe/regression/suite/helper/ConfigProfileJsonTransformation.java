@@ -11,13 +11,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-public class JsonTransformation {
+public class ConfigProfileJsonTransformation {
 
     public static Map<String, String> configProfileConvertedResponse = new HashMap<>();
 

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import kronos.price.exe.regression.suite.constant.ColumnConstants;
 import kronos.price.exe.regression.suite.constant.Constants;
-import kronos.price.exe.regression.suite.helper.JsonTransformation;
+import kronos.price.exe.regression.suite.helper.ConfigProfileJsonTransformation;
 import kronos.price.exe.regression.suite.model.PriceExceution.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
-public class PriceSearchExecutionMapper {
+public class PriceSearchRequestExecutionMapper {
 
     public static TreeMap<String, String> map = new TreeMap<String, String>();
 
@@ -77,8 +77,6 @@ public class PriceSearchExecutionMapper {
                     String searchContext = sh.getRow(r).getCell(ColumnConstants.SEARCH_CONTEXT).getStringCellValue().trim();
                     String searchConfigurations = sh.getRow(r).getCell(ColumnConstants.SEARCH_CONFIGURATIONS).getStringCellValue().trim();
                     String equipmentEventTransportModes = sh.getRow(r).getCell(ColumnConstants.EQUIPMENT_EVENT_TRANSPORT_MODES).getStringCellValue().trim();
-
-
 
 
                     List<Locations> locations = excelDataToJavaObject(cityCodeDestination, cityCodePODLY, cityCodePOR, cityCodePOD, countryCodeDestination, countryCodePODLY, countryCodePOR, countryCodePOD, facilityCodeDestination, facilityCodePODLY, facilityCodePOD, facilityCodePOR);
@@ -141,12 +139,11 @@ public class PriceSearchExecutionMapper {
         try {
             String json = objectMapper.writeValueAsString(priceExecutionRequest);
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode newSearchConfigurations = mapper.readTree(JsonTransformation.configProfileConvertedResponse.get(testcase));
+            JsonNode newSearchConfigurations = mapper.readTree(ConfigProfileJsonTransformation.configProfileConvertedResponse.get(testcase));
 
-            // Parse the original JSON
+
             JsonNode originalJson = mapper.readTree(json);
 
-            // Insert the new JSON object into the searchConfigurations array
             ((ArrayNode) originalJson.get("searchConfigurations")).add(newSearchConfigurations);
 
 
